@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import numpy as np
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+import tensorflow as tf
 
 # 라벨링된 json 파일 로드
 def load_metadata(json_file):
@@ -61,6 +62,7 @@ def create_word_index(json_files, label_dir):
     tokenizer.fit_on_texts(all_texts)
     return tokenizer
 
+
 # 메인 함수 수정
 def main(dataset_dir, output_dir):
     label_dir = os.path.join(dataset_dir, 'label')
@@ -113,7 +115,18 @@ def main(dataset_dir, output_dir):
                         print(f"Corresponding Words: {words}")
 
                     segment_counter += 1
-                    # 여기에 MFCC를 저장하거나 분석하는 로직을 추가한다.
+                    # 파일명 생성
+                    mfcc_filename = os.path.join(output_dir, f"{segment_file.split('.')[0]}_mfcc.npy")
+                    label_filename = os.path.join(output_dir, f"{segment_file.split('.')[0]}_labels.json")
+
+                    # MFCC 데이터 저장
+                    np.save(mfcc_filename, mfcc_normalized)
+
+                    # 텍스트 라벨 저장
+                    with open(label_filename, 'w') as file:
+                        json.dump({"labels": segment_labels.tolist(), "words": words}, file)
+
+                    segment_counter += 1
 
 # 실행
 dataset_dir = 'C:\\Users\\user\\Desktop\\jejuvoice\\dataset\\Sample'  # 여기에 Sample 폴더의 절대 경로 또는 상대 경로를 넣는다.
