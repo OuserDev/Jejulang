@@ -33,3 +33,6 @@
 2. 확보된 음성 데이터셋을 Google Cloud Storage에 저장
 3. 구축한 서비스를 streamlit를 이용하여 웹으로 구현 후 제공
 4. Git & Github를 활용하여 팀원들과 함께 효과적인 협업 진행
+
+## 초안 개발계획서
+[1팀 딥러닝 프로젝트 기획서 - 김선혁, 안상우, 석찬비.pptx](https://github.com/OuserDev/Jejulang/files/13650657/1.-.pptx)
