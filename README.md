@@ -2,12 +2,14 @@
 ### Jejulang.com
 **2023학년도 2학기 딥러닝 팀 프로젝트**
 
-# 팀 프로젝트 인원
+---
+
+## 팀 프로젝트 인원
 - 김선혁
 - 안상우
 - 석찬비
 
-# Stacks
+## Stacks
 - Python, Tensorflow, Keras
 - CNN과 Transformer의 장점을 결합한 **Conformer** 모델 활용
 - AI HUB Dataset 활용 - 중·노년층 한국어 방언 데이터 (제주도)
