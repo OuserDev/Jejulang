@@ -1,58 +1,90 @@
 import tensorflow as tf
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras.metrics import SparseCategoricalAccuracy
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Reshape, Input, Flatten, Dense
+from conformer_tf import ConformerConvModule, ConformerBlock
+from sklearn.model_selection import train_test_split
+import numpy as np
+import os
+import json
 
-# 가정: `conformer_model`이라는 Conformer 모델이 이미 정의되어 있고,
-# `train_dataset`과 `val_dataset`이 tf.data.Dataset 객체로 준비되어 있다.
+# 데이터 로드 및 전처리 함수
+def load_and_preprocess_data(output_dir):
+    X = []
+    y = []
 
-# 옵티마이저 설정
-optimizer = Adam(learning_rate=1e-4)
+    segment_files = [f for f in os.listdir(output_dir) if f.endswith('.npy')]
+    segment_files.sort()
 
-# 손실 함수 설정
-loss_function = SparseCategoricalCrossentropy(from_logits=True)
+    for segment_file in segment_files:
+        mfcc_filename = os.path.join(output_dir, segment_file)
+        label_filename = mfcc_filename.replace('_mfcc.npy', '_labels.json')
 
-# 성능 평가 지표 설정
-train_accuracy = SparseCategoricalAccuracy(name='train_accuracy')
-val_accuracy = SparseCategoricalAccuracy(name='val_accuracy')
+        # MFCC 데이터 로드
+        mfcc_data = np.load(mfcc_filename)
 
-# 훈련 스텝 함수 정의
-@tf.function
-def train_step(model, inputs, labels):
-    with tf.GradientTape() as tape:
-        predictions = model(inputs, training=True)
-        loss = loss_function(labels, predictions)
-    gradients = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-    train_accuracy.update_state(labels, predictions)
-    return loss
+        # MFCC 데이터 차원 변환 (20, 26) -> (26, 20)
+        mfcc_data = np.transpose(mfcc_data, (1, 0))
 
-# 검증 스텝 함수 정의
-@tf.function
-def val_step(model, inputs, labels):
-    predictions = model(inputs, training=False)
-    loss = loss_function(labels, predictions)
-    val_accuracy.update_state(labels, predictions)
-    return loss
+        # MFCC 데이터에 batch_size 차원 추가 (1, 26, 20)
+        mfcc_data = np.expand_dims(mfcc_data, axis=0)
 
-# 훈련 루프
-for epoch in range(epochs):
-    # 훈련
-    for inputs, labels in train_dataset:
-        loss = train_step(conformer_model, inputs, labels)
+        # 텐서로 변환
+        mfcc_tensor = tf.convert_to_tensor(mfcc_data, dtype=tf.float32)
 
-    # 검증
-    for inputs, labels in val_dataset:
-        val_loss = val_step(conformer_model, inputs, labels)
+        # 라벨 데이터 로드
+        with open(label_filename, 'r') as file:
+            label_data = json.load(file)['labels']
+        
+        X.append(mfcc_tensor.numpy())
+        y.append(label_data)
 
-    # 에포크마다 결과 출력
-    template = "Epoch {}, Loss: {}, Accuracy: {}, Validation Loss: {}, Validation Accuracy: {}"
-    print(template.format(epoch+1,
-                          loss,
-                          train_accuracy.result() * 100,
-                          val_loss,
-                          val_accuracy.result() * 100))
+    print(np.array(X).shape, np.array(y).shape)
+    return np.array(X), np.array(y)
 
-    # 메트릭 리셋
-    train_accuracy.reset_states()
-    val_accuracy.reset_states()
+# 데이터 로드 및 전처리
+directory_path = 'segments'
+X, y = load_and_preprocess_data(directory_path)
+
+# 데이터셋 분할
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 모델 아키텍처 정의
+input_shape = X_train.shape[1:]  # MFCC 데이터의 형태
+inputs = Input(shape=input_shape)
+
+# 모듈과 블록 생성
+conv_module = ConformerConvModule(
+    dim=512,
+    causal=False,
+    expansion_factor=2,
+    kernel_size=31,
+    dropout=0.0,
+)
+
+conformer_block = ConformerBlock(
+    dim=512,
+    dim_head=64,
+    heads=8,
+    ff_mult=4,
+    conv_expansion_factor=2,
+    conv_kernel_size=31,
+    attn_dropout=0.0,
+    ff_dropout=0.0,
+    conv_dropout=0.0,
+)
+
+x = conv_module(inputs) + inputs
+x = conformer_block(x)
+x = Flatten()(x)
+outputs = Dense(10, activation='softmax')(x)  # 예측 라벨 수에 맞게 조정
+
+model = Model(inputs=inputs, outputs=outputs)
+
+# 모델 컴파일
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+# 모델 학습
+model.fit(X_train, y_train, epochs=10, validation_split=0.2)
+
+# 모델 평가
+eval_results = model.evaluate(X_test, y_test)

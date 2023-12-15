@@ -16,21 +16,21 @@ class AudioProcessor:
         self.label_dir = os.path.join(dataset_dir, 'label')
         self.max_length = None
         self.metadata_processor = metadata_processor
-        
+
         # 세그먼트 저장 이름값의 디렉토리가 없다면, 생성
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
-        
+ 
     ## 모든 오디오 파일을 세그먼트로 분할
     def segment_all_audio_files(self):
         # 디렉토리 내의 각각의 모든 파일을 리스트화
         json_files = [f for f in os.listdir(self.label_dir) if f.endswith('.json')]
         audio_files = [f for f in os.listdir(self.voice_dir) if f.endswith('.wav')]
-        
+
         for json_file in json_files:
             base_name = json_file.split('.')[0]
             audio_file = f"{base_name}.wav"
-            
+
             # 만약 .json을 제거한 이름이 오디오 파일의 이름과 동일하다면, (json과 wav가 1:1인지 확인)
             if audio_file in audio_files:
                 json_path = os.path.join(self.label_dir, json_file)
@@ -39,7 +39,7 @@ class AudioProcessor:
                 metadata = self.metadata_processor.load_metadata(json_path)
                 transcription_info = self.metadata_processor.extract_information(metadata)
                 self.segment_audio(audio_path, transcription_info['segments'], self.output_dir, base_name)
-                
+
     ## segment_all_audio_files의 for문에게 호출되어 각 음성파일을 각각의 세그먼트로 분할
     def segment_audio(self, audio_file, segments, output_dir, base_name):
         audio = AudioSegment.from_wav(audio_file)
@@ -98,14 +98,14 @@ class AudioProcessor:
         mfcc_normalized = (mfcc - mfcc_mean[:, np.newaxis]) / mfcc_std[:, np.newaxis]
         # 각 MFCC 계수들을 평균이 0이고, 표준편차가 1인 분포로 계산해주며 변환
         return mfcc_normalized
-      
+
 
 
 class MetadataProcessor:
     def __init__(self, dataset_dir):
         self.label_dir = os.path.join(dataset_dir, 'label')
         self.tokenizer = Tokenizer() 
-        
+
     ## json 파일 로드하여 metadata로 반환
     def load_metadata(self, json_file):
         with open(json_file, 'r', encoding='utf-8') as file:
