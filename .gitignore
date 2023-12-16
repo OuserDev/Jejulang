@@ -1,3 +1,9 @@
 dataset
 Develop
 segments
+Streamlit/Include/
+Streamlit/etc/
+Streamlit/Lib/
+Streamlit/Scripts/
+Streamlit/share/
+Streamlit/pyvenv.cfg
