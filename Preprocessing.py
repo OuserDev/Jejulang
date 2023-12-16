@@ -7,6 +7,7 @@ import numpy as np
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import tensorflow as tf
+import pickle
 
 class AudioProcessor:
     def __init__(self, dataset_dir, output_dir, metadata_processor):
@@ -161,6 +162,10 @@ def main():
     segment_files = [os.path.join(output_dir, f) for f in os.listdir(output_dir) if f.endswith('.wav')]
     audio_processor.find_max_length(segment_files)
     
+    # 6. tokenizer 저장
+    with open('tokenizer.pickle', 'wb') as handle:
+        pickle.dump(metadata_processor.tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
     for segment_file in segment_files: # 모든 세그먼트 파일을 순회
         # 세그먼트 번호와 base_name 추출 (각 세그먼트 npy & json 생성 및 데이터 저장을 위해)
         base_name, segment_number = os.path.basename(segment_file).split('_segment')
