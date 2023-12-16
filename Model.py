@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Reshape, Dense
+from tensorflow.keras.layers import Reshape, Dense, MaxPooling1D
 from conformer_tf import ConformerConvModule, ConformerBlock
 import numpy as np
 import os
@@ -22,6 +22,7 @@ conv_module = ConformerConvModule(
     dropout=0.0,  # 드롭아웃 비율
 )
 
+# batch_size, sequence_length, feature_dim
 # Block - 컨포머 모듈을 포함하는더 큰 단위, 복합적인 구조
 conformer_block = ConformerBlock(
     dim=20,  # 차원 크기
@@ -34,7 +35,10 @@ conformer_block = ConformerBlock(
     ff_dropout=0.0,  # 피드 포워드 드롭아웃 비율
     conv_dropout=0.0,  # 컨볼루션 드롭아웃 비율
 )
-    
+
+# MaxPooling1D 레이어 추가
+pooling_layer = MaxPooling1D(pool_size=2, strides=2, padding='same')
+
 # 모든 MFCC .npy 파일을 로드하고 모델에 입력
 for file_name in mfcc_files:
     file_path = os.path.join(directory_path, file_name)
@@ -53,7 +57,14 @@ for file_name in mfcc_files:
     mfcc_data = tf.convert_to_tensor(mfcc_data, dtype=tf.float32)
 
     # Convolutional Module을 통과시킨 후 결과
-    conv_output = conv_module(mfcc_data) + mfcc_data
+    conv_output = conv_module(mfcc_data)
+
+    # MaxPooling1D 레이어를 통해 시퀀스 길이 조정
+    #pooled_output = pooling_layer(conv_output)
+
+    # 조정된 출력에 원본 데이터를 더함
+    # mfcc_data의 차원과 맞추기 위해 필요한 경우 추가 처리 진행
+    #adjusted_output = pooled_output + mfcc_data[..., :pooled_output.shape[1], :]
 
     # Conformer Block을 통과시킨 후 결과
     conformer_output = conformer_block(conv_output)
