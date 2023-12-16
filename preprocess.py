@@ -23,7 +23,7 @@ def extract_dialect_standard(json_file_path):
 def split_sentence_to_words(dialect_sentence, standard_sentence):
     if standard_sentence is None:
         standard_sentence = dialect_sentence
-        print(f"None 그대로 넣음: {dialect_sentence} -> {standard_sentence}")
+        #print(f"None 그대로 넣음: {dialect_sentence} -> {standard_sentence}")
     dialect_words = clean_and_split_sentence(dialect_sentence)
     standard_words = clean_and_split_sentence(standard_sentence)
     if len(dialect_words) != len(standard_words):
@@ -35,13 +35,17 @@ def preprocess_and_split(df):
     all_word_pairs = []
     for _, row in df.iterrows():
         word_pairs = split_sentence_to_words(row['dialect'], row['standard'])
-        all_word_pairs.extend(word_pairs)
+        for dialect, standard in word_pairs:
+            if len(dialect.split()) == 1:  # 'dialect'가 단일 단어인 경우만 포함
+                standard = ''.join(standard.split())  # 'standard'의 띄어쓰기 제거
+                all_word_pairs.append((dialect, standard))
+            else:
+                print(f"다중 단어 조합 삭제됨: {dialect} -> {standard}")
     word_df = pd.DataFrame(all_word_pairs, columns=['dialect', 'standard'])
     duplicated_pairs = word_df[word_df.duplicated(subset=['dialect'], keep=False)]
-    for _, pair in duplicated_pairs.iterrows():
-        print(f"중복되어 제거하였습니다.: {pair['dialect']} - {pair['standard']}")
     word_df.drop_duplicates(subset=['dialect'], keep='first', inplace=True)
     return word_df
+
 
 def process_folder(folder_path):
     all_pairs = []
