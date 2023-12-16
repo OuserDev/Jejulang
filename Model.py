@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Reshape, Dense, Resizing, Reshape, MaxPooling1D
+from tensorflow.keras.layers import Reshape, Dense, MaxPooling1D
 from conformer_tf import ConformerConvModule, ConformerBlock
 import numpy as np
 import os
@@ -29,8 +29,8 @@ conformer_block = ConformerBlock(
     dim_head=64,  # 어텐션 헤드의 차원
     heads=8,  # 어텐션 헤드 수
     ff_mult=4,  # 피드 포워드 멀티플라이어
-    conv_expansion_factor=1,  # 컨볼루션 확장 배수
-    conv_kernel_size=15,  # 컨볼루션 커널 크기
+    conv_expansion_factor=2,  # 컨볼루션 확장 배수
+    conv_kernel_size=31,  # 컨볼루션 커널 크기
     attn_dropout=0.0,  # 어텐션 드롭아웃 비율
     ff_dropout=0.0,  # 피드 포워드 드롭아웃 비율
     conv_dropout=0.0,  # 컨볼루션 드롭아웃 비율
@@ -60,14 +60,14 @@ for file_name in mfcc_files:
     conv_output = conv_module(mfcc_data)
 
     # MaxPooling1D 레이어를 통해 시퀀스 길이 조정
-    pooled_output = pooling_layer(conv_output)
+    #pooled_output = pooling_layer(conv_output)
 
     # 조정된 출력에 원본 데이터를 더함
     # mfcc_data의 차원과 맞추기 위해 필요한 경우 추가 처리 진행
-    adjusted_output = pooled_output + mfcc_data[..., :pooled_output.shape[1], :]
+    #adjusted_output = pooled_output + mfcc_data[..., :pooled_output.shape[1], :]
 
     # Conformer Block을 통과시킨 후 결과
-    conformer_output = conformer_block(adjusted_output)
+    conformer_output = conformer_block(conv_output)
 
     # 모델의 출력 확인
     print(conformer_output.shape)
