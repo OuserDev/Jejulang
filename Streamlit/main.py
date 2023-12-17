@@ -14,17 +14,7 @@ show_pages(
     ]
 ) 
 
-font_style = """
-    <style>
-        @import url('https://fonts.googleapis.com/earlyaccess/nanumgothic.css');
-        body {
-            font-family: 'Nanum Gothic', sans-serif;
-        }
-    </style>
-"""
-
-
-def add_bg_from_url():
+'''def add_bg_from_url():
     st.markdown(
          f"""
          <style>
@@ -38,7 +28,7 @@ def add_bg_from_url():
          unsafe_allow_html=True
      )
 
-add_bg_from_url()
+add_bg_from_url()'''
 
 img = Image.open('icon.png')
 
@@ -66,7 +56,7 @@ st.markdown('<h1 style="font-size:3em; text-align:center;">JEJULANG.COM</h1>', u
 
 st.markdown(
     '<p style="font-size:1.5em; text-align:center;">'
-    '사용자가 제주도 방언으로 텍스트를 입력하면 해당 데이터를 　　표준어 텍스트로 번역하여 제공하는 서비스'
+    '사용자가 제주도 방언으로 텍스트를 입력하면 해당 데이터를 표준어 텍스트로 번역하여 제공하는 서비스'
     '</p>'
     '<p style="font-size:1.5em; text-align:center;">'
     '사용자가 입력한 방언 문구는 처리 후, 표준어로 번역된 결과가 웹 페이지에 정형화되어 출력'
@@ -77,3 +67,4 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+st.markdown('<p style="font-size:1.5em; text-align:center;">DEV. 김선혁, 안상우, 석찬비</p>', unsafe_allow_html=True)
