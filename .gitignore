@@ -1,3 +1,6 @@
 dataset
 Develop
 segments
+dialect_to_standard_translation_model.h5
+tokenizer_dialect.pickle
+tokenizer_standard.pickle

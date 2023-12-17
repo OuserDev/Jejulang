@@ -25,9 +25,8 @@ def extract_sentences(json_path):
     
     sentences = []
     for sentence in data['transcription']['sentences']:
-        # 특수문자와 구두점을 제거
         dialect = clean_text(sentence['dialect'])
-        standard = clean_text(sentence['standard'])
+        standard = '<sos> ' + clean_text(sentence['standard']) + ' <eos>'
         sentences.append((dialect, standard))
     
     return sentences
@@ -69,8 +68,6 @@ max_length_dialect = max(len(s) for s in sequences_dialect)
 padded_sequences_dialect = pad_sequences(sequences_dialect, maxlen=max_length_dialect, padding='post')
 
 # 표준어 데이터에 대한 전처리 시작
-# 표준어 데이터에 시작과 종료 토큰 추가
-df['standard'] = '<sos> ' + df['standard'] + ' <eos>'
 
 # 토큰화 및 정수 인덱싱 (표준어)
 tokenizer_standard = Tokenizer()
@@ -102,7 +99,20 @@ with open('max_length_standard.txt', 'w') as file:
 
 with open('max_length_dialect.txt', 'w') as file:
     file.write(str(max_length_dialect))
-    
+
+# 특정 문장 선택 (예: 첫 번째 문장)
+sample_sentence = df['standard'][0]
+
+# 토큰화된 시퀀스 확인
+sample_sequence = tokenizer_standard.texts_to_sequences([sample_sentence])[0]
+
+# 토큰화된 시퀀스 출력
+print("토큰화된 시퀀스:", sample_sequence)
+
+# 인덱스-단어 매핑 확인
+decoded_sequence = [tokenizer_standard.index_word[i] for i in sample_sequence if i in tokenizer_standard.index_word]
+print("디코딩된 문장:", ' '.join(decoded_sequence))
+
 # 모델 파라미터 설정
 embedding_dim = 256
 lstm_units = 512
