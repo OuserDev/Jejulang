@@ -67,16 +67,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown('<h2 style="font-family: \'SKYBORI\', sans-serif; font-size:1.8em;">데이터 구축 규모</h2>', unsafe_allow_html=True)
-data = {
-    '데이터 종류': ['원천 데이터', '라벨링 데이터'],
-    '데이터 형태': ['.wav', '.json'],
-    '규모': ['207.2시간', '56,666건']
-}
-df = pd.DataFrame(data)
-st.table(df.set_index('데이터 종류'))
-
-
 st.markdown('<h2 style="font-family: \'SKYBORI\', sans-serif; font-size:1.8em;">데이터 분포</h2>', unsafe_allow_html=True)
 
 # 성별 비율
