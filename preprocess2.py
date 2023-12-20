@@ -9,14 +9,12 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Embedding, Dense, LayerNormalization, MultiHeadAttention
+from tensorflow.keras.layers import Input, Embedding, Dense, LayerNormalization, Dropout, MultiHeadAttention
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 from nltk.translate.bleu_score import sentence_bleu
-from tensorflow.keras.layers import MultiHeadAttention, LayerNormalization
 from tensorflow.keras import layers, regularizers
-from tensorflow.keras.utils import custom_object_scope
-from tensorflow.keras.models import load_model
+import nltk
 
 class PositionalEncoding(layers.Layer):
     def __init__(self, d_model, max_len=5000):
@@ -92,63 +90,111 @@ class TransformerDecoder(layers.Layer):
         return self.norm3(norm2_output + self.dropout3(self.dense_output(proj_output), training=training))
 
 
-# 01. 모델 불러오기
+
+
+current_dir = os.path.dirname(__file__)
+model_path = os.path.join(current_dir, 'transformer_dialect_to_standard.h5')
+csv_path = os.path.join(current_dir, 'test_data.csv')
+pkl1_path = os.path.join(current_dir, 'tokenizer_dialect.pkl')
+pkl2_path = os.path.join(current_dir, 'tokenizer_standard.pkl')
+json_path = os.path.join(current_dir, 'model_params.json')
+
+# 21-1. 모델 불러오기 (필요한 경우)
 with tf.keras.utils.custom_object_scope({'PositionalEncoding': PositionalEncoding, 
                                          'TransformerEncoder': TransformerEncoder,
                                          'TransformerDecoder': TransformerDecoder}):
-    model = tf.keras.models.load_model('transformer_dialect_to_standard.h5')
+    model = tf.keras.models.load_model(model_path)
+    
+# 21-2. test_df 불러오기
+test_df = pd.read_csv(csv_path)
 
-# 02-1. 훈련 데이터 토크나이저 로드
-with open('tokenizer_dialect.pkl', 'rb') as handle:
+# 21-3. 훈련 데이터 토크나이저 로드
+with open(pkl1_path, 'rb') as handle:
     tokenizer_dialect = pickle.load(handle)
-with open('tokenizer_standard.pkl', 'rb') as handle:
+with open(pkl2_path, 'rb') as handle:
     tokenizer_standard = pickle.load(handle)
 
-# 02-2. 패딩 길이 적용을 위한, 최대 길이 매개변수 로드
-with open('model_params.json', 'r') as json_file:
+# 21-4. 패딩 길이 적용을 위한, 최대 길이 매개변수 로드
+with open(json_path, 'r') as json_file:
     params = json.load(json_file)
     max_length_dialect = params['max_length_dialect']
     max_length_standard = params['max_length_standard']
+    
+    
+    
+# # (+) 테스트 데이터에서 OOV 토큰이 존재하는 문장과 그 숫자 시퀀스를 찾아 출력
+# oov_sentences_and_sequences = []
+# for sentence in test_df['dialect']:
+#     tokens = tokenizer_dialect.texts_to_sequences([sentence])[0] # 단일 문장을 숫자 시퀀스로 변환
+#     # 각 토큰이 OOV 토큰인지 확인
+#     if any(token == 1 for token in tokens):
+#         oov_sentences_and_sequences.append((sentence, tokens))
 
+# # (+) OOV 토큰이 존재하는 문장과 변환된 숫자 시퀀스를 출력
+# for sentence, sequence in oov_sentences_and_sequences:
+#     print("OOV 토큰이 포함된 방언 문장:", sentence)
+#     print("해당 문장의 숫자 시퀀스:", sequence)
 
+# oov_sentence_indexes = []
+# # (+) OOV 토큰이 포함된 문장들의 인덱스를 탐색 후 출력 및 저장
+# for index, sentence in enumerate(test_df['dialect']):
+#     tokens = tokenizer_dialect.texts_to_sequences([sentence])[0]
+#     if any(token == 1 for token in tokens):  # OOV 토큰을 확인
+#         oov_sentence_indexes.append(index)
+# print("OOV 문장 인덱스:", oov_sentence_indexes)
 
+def get_user_input():
+    return "경 고마니 잇지만 말망"
 
- 
-# 입력
-input_sentence = "아치 때 도새기 잡는 날은 몸국헹덜 먹었지"
+# 사용자 입력 문장을 전처리하는 함수
+def preprocess_input_sentence(user_input, tokenizer_dialect, max_length_dialect):
+    seq = tokenizer_dialect.texts_to_sequences([user_input])
+    padded_seq = pad_sequences(seq, maxlen=max_length_dialect, padding='post')
+    return padded_seq
 
-# 입력 데이터 전처리 - 시퀀스 변환
-sequence = tokenizer_dialect.texts_to_sequences([input_sentence])
-print("입력데이터 토큰화 후 결과:", sequence[0])
-# 입력 데이터 전처리 - 패딩 적용
-padded_sequence = pad_sequences(sequence, maxlen=max_length_dialect, padding='post')
-print("입력데이터 패딩 결과:", padded_sequence)
+# 23. 테스트 데이터에 대한 예측
+def predict_sequence(model, input_seq, max_length_standard, tokenizer_standard, max_decoded_length):
+    target_seq = np.zeros((1, max_length_standard))
+    target_seq[0, 0] = tokenizer_standard.word_index['sos']
 
-print("토큰화된 단어들:", end=" ")
-for word_index in sequence[0]:
-    word = tokenizer_dialect.index_word.get(word_index, None)
-    if word:
-        print(f"{word}", end=" ")
-    else:
-        print(f"OOV", end=" ")
-print()
+    stop_condition = False
+    decoded_sentence = []
 
+    while not stop_condition:
+        output_tokens = model.predict([input_seq, target_seq])
 
-# 인코더 입력 준비
-encoder_input = padded_sequence
+        token_probabilities = output_tokens[0, -1, :]
+        token_probabilities[0:4] = 0  # OOV, sos, eos 토큰의 확률을 0으로 설정
+        token_probabilities /= token_probabilities.sum()  # 확률 정규화
+        sampled_token_index = np.random.choice(np.arange(token_probabilities.size), p=token_probabilities)
+        sampled_word = tokenizer_standard.index_word.get(sampled_token_index, '?')
 
-# 디코더 입력 초기화
-decoder_input = np.zeros((1, max_length_standard), dtype='int32')
-decoder_input[0, 0] = tokenizer_standard.word_index['sos']
+        print("현재 디코더 입력 시퀀스:", target_seq[0, :len(decoded_sentence)+1])
+        print("모델의 예측 확률 분포:", token_probabilities)
+        print(f"예측된 인덱스: {sampled_token_index}, 예측된 단어: {sampled_word}")
+        
+        if sampled_word == 'eos' or len(decoded_sentence) >= max_decoded_length:
+            stop_condition = True
+        else:
+            decoded_sentence.append(sampled_word)
+            if len(decoded_sentence) < max_length_standard - 1:
+                target_seq[0, len(decoded_sentence)] = sampled_token_index
 
-# 모델을 사용하여 단계별로 시퀀스 예측
-for i in range(1, max_length_standard):
-    predictions = model.predict([encoder_input, decoder_input])[0, i - 1, :]
-    sampled_token_index = np.argmax(predictions)
-    decoder_input[0, i] = sampled_token_index
-    if sampled_token_index == tokenizer_standard.word_index['eos']:
-        break
+    return ' '.join(decoded_sentence)
 
-# 예측된 숫자 시퀀스를 텍스트로 변환
-predicted_sentence = ' '.join([tokenizer_standard.index_word[token] for token in decoder_input[0] if token > 0 and token != tokenizer_standard.word_index['sos']])
-print("예측된 표준어 문장:", predicted_sentence)
+def main():
+    user_input = get_user_input()
+    max_decoded_length = len(user_input.split())
+    preprocessed_input = preprocess_input_sentence(user_input, tokenizer_dialect, max_length_dialect)
+    predicted_sentence = predict_sequence(model, preprocessed_input, max_length_standard, tokenizer_standard, max_decoded_length)
+    print("예측된 표준어 문장:", predicted_sentence)
+    
+def translate_jeju_dialect(input_text):
+    max_decoded_length = len(input_text.split())
+    # 사용자 입력 전처리
+    preprocessed_input = preprocess_input_sentence(input_text, tokenizer_dialect, max_length_dialect)
+    # 모델을 사용하여 번역 수행
+    predicted_sentence = predict_sequence(model, preprocessed_input, max_length_standard, tokenizer_standard, max_decoded_length)
+    # 번역된 문장 반환
+    return predicted_sentence
+

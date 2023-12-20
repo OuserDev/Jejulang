@@ -2,6 +2,12 @@ import streamlit as st
 from st_pages import Page, Section, show_pages, add_page_title
 from PIL import Image
 import base64
+import sys
+import os
+# 현재 파일의 경로를 기준으로 상위 디렉토리의 경로를 추가
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+# preprocess2.py 모듈에서 translate_jeju_dialect 함수 임포트
+from preprocess2 import translate_jeju_dialect
 
 font_path = "SKYBORI.ttf"
 
