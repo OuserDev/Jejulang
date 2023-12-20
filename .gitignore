@@ -1,7 +1,17 @@
 dataset
 Develop
 segments
+<<<<<<< HEAD
 dialect_to_standard_translation_model.h5
 tokenizer_dialect.pickle
 tokenizer_standard.pickle
+=======
+transformer_dialect_to_standard.h5
+test_data.csv
+tokenizer_dialect.pkl
+tokenizer_standard.pkl
+model_params
+model_params.json
+dialect_standard_sentences.csv
+>>>>>>> edb86f910acb5fcac46c4553e4b393825e29b305
 requiresment.txt

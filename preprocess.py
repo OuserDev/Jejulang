@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Embedding, Dense, LayerNormalization, Dropout, MultiHeadAttention
+from tensorflow.keras.layers import Input, Embedding, Dense, LayerNormalization, Attention, Dropout, MultiHeadAttention
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 from nltk.translate.bleu_score import sentence_bleu
@@ -132,7 +132,7 @@ def process_json_files_to_csv(folder_path, output_csv_path):
 
 
 # 전처리 01. 데이터 로드 후 CSV화 (시작점)
-folder_path = 'dataset/Sample/label'
+folder_path = 'dataset/Training/t/t'
 output_csv_path = 'dialect_standard_sentences.csv'
 process_json_files_to_csv(folder_path, output_csv_path)
 
@@ -267,8 +267,8 @@ early_stopping = EarlyStopping(monitor='val_accuracy', patience=3, restore_best_
 history = model.fit(
     [padded_sequences_dialect_train, padded_sequences_standard_decoder_input],
     one_hot_targets,
-    batch_size=64,
-    epochs=10,
+    batch_size=128,
+    epochs=30,
     validation_split=0.2,
     callbacks=[early_stopping]
 )
