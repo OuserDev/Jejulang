@@ -169,12 +169,15 @@ def predict_sequence(model, input_seq, max_length_standard, tokenizer_standard):
     while not stop_condition:
         output_tokens = model.predict([input_seq, target_seq])
 
-        # 가장 확률이 높은 토큰 선택
-        sampled_token_index = np.argmax(output_tokens[0, -1, :])
+        # 확률 분포에 따라 무작위로 토큰 선택 (0번 인덱스 제외)
+        token_probabilities = output_tokens[0, -1, :]
+        token_probabilities[0] = 0  # OOV 토큰의 확률을 0으로 설정
+        token_probabilities /= token_probabilities.sum()  # 확률 정규화
+        sampled_token_index = np.random.choice(np.arange(token_probabilities.size), p=token_probabilities)
         sampled_word = tokenizer_standard.index_word.get(sampled_token_index, '?')
-        
+
         print("현재 디코더 입력 시퀀스:", target_seq[0, :len(decoded_sentence)+1])
-        print("모델의 예측 확률 분포:", output_tokens[0, -1, :])
+        print("모델의 예측 확률 분포:", token_probabilities)
         print(f"예측된 인덱스: {sampled_token_index}, 예측된 단어: {sampled_word}")
         
         # 'eos' 토큰이 나오거나 최대 길이에 도달하면 종료
@@ -183,7 +186,7 @@ def predict_sequence(model, input_seq, max_length_standard, tokenizer_standard):
         else:
             decoded_sentence.append(sampled_word)
 
-            # 업데이트된 시퀀스를 다음 입력으로 사용 (길이 초과 방지)
+            # 업데이트된 시퀀스를 다음 입력으로 사용
             if len(decoded_sentence) < max_length_standard - 1:
                 target_seq[0, len(decoded_sentence)] = sampled_token_index
 
