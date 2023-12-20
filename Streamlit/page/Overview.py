@@ -3,6 +3,11 @@ from st_pages import Page, Section, show_pages, add_page_title
 from PIL import Image
 import base64
 
+# 이미지를 Base64 문자열로 변환
+def get_image_as_base64(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode('utf-8')
+
 font_path = "SKYBORI.ttf"
 
 # 글꼴 적용
@@ -38,9 +43,16 @@ def add_bg_from_url():
 
 add_bg_from_url()
 
-img = Image.open('icon.png')
-
-st.image(img, width=220)
+# 이미지 로드
+img_path = 'icon.png'
+img_base64 = get_image_as_base64(img_path)
+# HTML을 사용하여 이미지 스타일 적용
+img_html = f"""
+    <div style="text-align: center; margin-top:100px; ">
+        <img src='data:image/png;base64,{img_base64}' style='width: 350px; display: block; margin-left: auto; margin-right: auto;'>
+    </div>
+"""
+st.markdown(img_html, unsafe_allow_html=True)
 
 st.markdown('<h1 style="font-family: \'SKYBORI\', sans-serif; font-size:3em;">OVERVIEW</h1>', unsafe_allow_html=True)
 
