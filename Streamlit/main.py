@@ -38,7 +38,7 @@ def add_bg_from_url():
             f"""
             <style>
             .stApp {{
-                background-image: url("https://i.imgur.com/EmCsh2V.jpg");
+                background-image: url("https://i.imgur.com/neR8NEG.jpg");
                 background-attachment: fixed;
                 background-size: cover
             }}
