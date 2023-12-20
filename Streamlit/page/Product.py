@@ -44,7 +44,7 @@ st.image(img)
 
 st.title("PRODUCT")
 
-st.markdown('<h2 style="font-family: \'SKYBORI\', sans-serif; font-size:1.3em;">제주도 방언을 입력하세요.</h2>', unsafe_allow_html=True)
+st.markdown('<h2 style="font-family: \'SKYBORI\', sans-serif; font-size:1.3em;">제주도 방언이 포함된 문장을 입력해주세요.</h2>', unsafe_allow_html=True)
 
 input_text = st.text_area("", "뭐랭하멘?")
 

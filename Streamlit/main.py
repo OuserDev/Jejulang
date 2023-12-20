@@ -56,11 +56,11 @@ st.image(img, width=700)
 st.markdown('<h1 style="font-family: \'SKYBORI\', sans-serif; font-size:3em; text-align:center;">JEJULANG.COM</h1>', unsafe_allow_html=True)
 
 st.markdown(
-    '<p style="font-family: \'SKYBORI\', sans-serif; font-size:1.5em; text-align:center;">'
-    '사용자가 제주도 방언으로 텍스트를 입력하면 해당 데이터를 표준어 텍스트로 번역하여 제공하는 서비스'
+    '<p style="margin:50px 0 35px 0; font-family: \'SKYBORI\', sans-serif; font-size:1.5em; text-align:center;">'
+    '사용자가 제주도 방언으로 텍스트를 입력하면<br>해당 데이터를 표준어 텍스트로 번역하여 제공하는 서비스'
     '</p>'
-    '<p style="font-family: \'SKYBORI\', sans-serif; font-size:1.5em; text-align:center;">'
-    '사용자가 입력한 방언 문구는 처리 후, 표준어로 번역된 결과가 웹 페이지에 정형화되어 출력'
+    '<p style="margin-bottom:40px; font-family: \'SKYBORI\', sans-serif; font-size:1.5em; text-align:center;">'
+    '사용자가 입력한 방언 문구는 처리 후,<br>표준어로 번역된 결과가 웹 페이지에 정형화되어 출력<br>'
     '</p>'
     '<p style="font-family: \'SKYBORI\', sans-serif; font-size:1.5em; text-align:center;">'
     '번역된 내용은 사용자가 제공한 제주도 방언의 의미를 명확하게 전달하도록 고려'
@@ -68,4 +68,4 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown('<p style="font-family: \'SKYBORI\', sans-serif; font-size:1.5em; text-align:center;">DEV. 김선혁, 안상우, 석찬비</p>', unsafe_allow_html=True)
+st.markdown('<p style="font-family: \'SKYBORI\', sans-serif; font-size:1.8em; text-align:center; font-weight: bold; margin-top:30px; ">DEV. 김선혁, 안상우, 석찬비</p>', unsafe_allow_html=True)

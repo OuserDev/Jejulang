@@ -196,8 +196,6 @@ for i in range(len(test_df)):
     print(f"예측된 표준어 문장: {predicted_sentence}\n")
 
 
-
-
 # 25. BLEU 스코어 계산 (NLP에 자주 사용되는 지표) // 0 ~ 1, 높을수록 유사성이 높다.
 bleu_scores = []
 for i in range(len(test_df)):

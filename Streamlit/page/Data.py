@@ -62,7 +62,7 @@ st.markdown(
 st.markdown('<h2 style="font-family: \'SKYBORI\', sans-serif; font-size:1.8em;">소개</h2>', unsafe_allow_html=True)
 st.markdown(
     '<p style="font-family: \'SKYBORI\', sans-serif; font-size:1.3em;">'
-    '제주도 지역의 50대 이상 발화자가 발화한 따라말하기(정형), 질문답하기(비정형), 2인대화(비정형) 의 방언 발화 음성 데이터'
+    '제주도 지역의 50대 이상 발화자가 발화한 따라말하기(정형), 질문답하기(비정형), 2인대화(비정형) 의 방언 텍스트 데이터'
     '</p>',
     unsafe_allow_html=True
 )
