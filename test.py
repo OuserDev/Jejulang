@@ -158,8 +158,7 @@ model.summary()
 
 
 # 23. 테스트 데이터에 대한 예측
-def predict_sequence(model, input_seq, max_length_standard, tokenizer_standard):
-    # 'sos' 토큰으로 시작하는 디코더 입력 시퀀스
+def predict_sequence(model, input_seq, max_length_standard, tokenizer_standard, max_decoded_length):
     target_seq = np.zeros((1, max_length_standard))
     target_seq[0, 0] = tokenizer_standard.word_index['sos']
 
@@ -169,46 +168,30 @@ def predict_sequence(model, input_seq, max_length_standard, tokenizer_standard):
     while not stop_condition:
         output_tokens = model.predict([input_seq, target_seq])
 
-        # 가장 확률이 높은 토큰 선택
-        sampled_token_index = np.argmax(output_tokens[0, -1, :])
+        token_probabilities = output_tokens[0, -1, :]
+        token_probabilities[0:4] = 0  # OOV, sos, eos 토큰의 확률을 0으로 설정
+        token_probabilities /= token_probabilities.sum()  # 확률 정규화
+        sampled_token_index = np.random.choice(np.arange(token_probabilities.size), p=token_probabilities)
         sampled_word = tokenizer_standard.index_word.get(sampled_token_index, '?')
-        
+
         print("현재 디코더 입력 시퀀스:", target_seq[0, :len(decoded_sentence)+1])
-        print("모델의 예측 확률 분포:", output_tokens[0, -1, :])
+        print("모델의 예측 확률 분포:", token_probabilities)
         print(f"예측된 인덱스: {sampled_token_index}, 예측된 단어: {sampled_word}")
         
-        # 'eos' 토큰이 나오거나 최대 길이에 도달하면 종료
-        if sampled_word == 'eos' or len(decoded_sentence) >= max_length_standard - 1:
+        if sampled_word == 'eos' or len(decoded_sentence) >= max_decoded_length:
             stop_condition = True
         else:
             decoded_sentence.append(sampled_word)
-
-            # 업데이트된 시퀀스를 다음 입력으로 사용 (길이 초과 방지)
             if len(decoded_sentence) < max_length_standard - 1:
                 target_seq[0, len(decoded_sentence)] = sampled_token_index
 
     return ' '.join(decoded_sentence)
 
-
-# # for문에서(24) 호출되어 예측된 숫자 시퀀스를 텍스트로 변환하는 함수
-# def decode_sequence(input_seq, tokenizer):
-#     decoded_sentence = []
-#     for i, token_probs in enumerate(input_seq):  # 각 원소별로 반복
-#         sampled_token_index = np.argmax(token_probs)  # 가장 높은 확률을 가진 인덱스 탐색
-#         sampled_word = tokenizer.index_word.get(sampled_token_index, '?')  # 찾은 인덱스에 해당하는 실제 단어를 어휘 사전에서 검색, 없으면 '?' 출력
-#         #print(f"스텝 {i}: 인덱스 {sampled_token_index}, 단어 '{sampled_word}'")  # 디버깅 정보 출력
-
-#         if sampled_word not in ['sos', 'eos']:  # sos와 eos 토큰 제외
-#             decoded_sentence.append(sampled_word)
-#         elif sampled_word == 'eos':  # eos 토큰이 나타나면, 문장의 끝으로 간주하고 중단
-#             break
-
-#     return ' '.join(decoded_sentence)  # 공백을 사용하여 문장 형성 및 연결하여 반환
-
 # 테스트 데이터에 대한 예측 및 디버깅
 for i in range(len(test_df)):
     input_seq = padded_test_dialect[i:i+1]
-    predicted_sentence = predict_sequence(model, input_seq, max_length_standard, tokenizer_standard)
+    max_decoded_length = len(test_df['dialect'].iloc[i].split())  # 원본 방언 문장의 단어 수로 최대 길이 설정
+    predicted_sentence = predict_sequence(model, input_seq, max_length_standard, tokenizer_standard, max_decoded_length)
     print(f"원본 방언 문장: {test_df['dialect'].iloc[i]}")
     print(f"예측된 표준어 문장: {predicted_sentence}\n")
 
