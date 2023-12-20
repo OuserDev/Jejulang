@@ -2,6 +2,7 @@ dataset
 Develop
 segments
 <<<<<<< HEAD
+<<<<<<< HEAD
 dialect_to_standard_translation_model.h5
 tokenizer_dialect.pickle
 tokenizer_standard.pickle
@@ -15,3 +16,11 @@ model_params.json
 dialect_standard_sentences.csv
 >>>>>>> edb86f910acb5fcac46c4553e4b393825e29b305
 requiresment.txt
+=======
+Streamlit/Include/
+Streamlit/etc/
+Streamlit/Lib/
+Streamlit/Scripts/
+Streamlit/share/
+Streamlit/pyvenv.cfg
+>>>>>>> origin/web-sangwoo
