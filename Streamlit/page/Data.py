@@ -28,7 +28,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-'''def add_bg_from_url():
+def add_bg_from_url():
     st.markdown(
          f"""
          <style>
@@ -43,7 +43,7 @@ st.markdown(
          unsafe_allow_html=True
      )
 
-add_bg_from_url()'''
+add_bg_from_url()
 
 img = Image.open('icon.png')
 

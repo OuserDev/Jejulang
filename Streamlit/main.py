@@ -31,23 +31,23 @@ show_pages(
         Page("./page/Data.py", "💿DATA", ""),
         Page("./page/Product.py", "💿PRODUCT", ""),
     ]
-) 
+)
 
-'''def add_bg_from_url():
+def add_bg_from_url():
     st.markdown(
-         f"""
-         <style>
-         .stApp {{
-             background-image: url("https://i.imgur.com/EmCsh2V.jpg");
-             background-attachment: fixed;
-             background-size: cover
-         }}
-         </style>
-         """,
-         unsafe_allow_html=True
-     )
+            f"""
+            <style>
+            .stApp {{
+                background-image: url("https://i.imgur.com/EmCsh2V.jpg");
+                background-attachment: fixed;
+                background-size: cover
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
-add_bg_from_url()'''
+add_bg_from_url()
 
 img = Image.open('icon.png')
 
