@@ -10,7 +10,7 @@
 - 석찬비
 
 ## Stacks
-- Python-
+- Python
 - Tensorflow
 - Keras
 - Streamlit
