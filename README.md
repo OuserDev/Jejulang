@@ -16,7 +16,7 @@
 - Streamlit
 - VSCode, Git & Github
 - CNN과 Transformer의 장점을 결합한 **Conformer** 모델 활용
-- AI HUB Dataset 활용 - 중·노년층 한국어 방언 데이터 (제주도)
+- AI HUB Dataset 활용 - 중·노년층 한국어 방언 데이터 (제주도.)
 
 ---
 
